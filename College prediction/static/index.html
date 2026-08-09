@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="IIT Admission Predictor — Predict your IIT admission chances based on JEE Advanced rank using historical JoSAA counseling data (2016-2020). Get probabilistic risk-tier analysis with earliest admission round estimates.">
+    <title>IIT College Predictor — JEE Advanced Rank Analysis</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+</head>
+<body>
+
+    <!-- Animated background orbs -->
+    <div class="bg-animation">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+    </div>
+
+    <div class="container">
+
+        <!-- ─── Hero Section ─── -->
+        <header class="hero">
+            <div class="hero-badge">
+                <span class="dot"></span>
+                Powered by 4 Years of JoSAA Data
+            </div>
+            <h1>IIT Admission<br>Prediction Engine</h1>
+            <p class="subtitle">
+                Enter your JEE Advanced rank and preferences to discover your best-fit IITs 
+                with probabilistic admission analysis across 2016–2020 historical counseling data.
+            </p>
+        </header>
+
+        <!-- ─── Input Form ─── -->
+        <section class="form-section">
+            <div class="glass-card">
+                <form id="predict-form" autocomplete="off">
+                    <div class="form-grid form-grid-3">
+                        <div class="form-group">
+                            <label for="rank-input">JEE Advanced Rank</label>
+                            <input 
+                                type="number" 
+                                id="rank-input" 
+                                placeholder="e.g. 5000" 
+                                min="1" 
+                                required
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="category-select">Category</label>
+                            <select id="category-select" required>
+                                <option value="" disabled selected>Select category</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="gender-select">Gender</label>
+                            <select id="gender-select" required>
+                                <option value="" disabled selected>Select gender</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-predict" id="predict-btn">
+                        🔍 Predict My IITs
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ─── Loading Spinner ─── -->
+        <div class="loader-container" id="loader">
+            <div class="spinner"></div>
+            <span class="loader-text">Analyzing 4 years of IIT counseling data…</span>
+        </div>
+
+        <!-- ─── Query Context Banner ─── -->
+        <div class="query-banner" id="query-banner">
+            <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Results for:</span>
+            <span class="query-tag">
+                <span class="tag-label">JEE Adv. Rank</span>
+                <span class="tag-value" id="query-rank">—</span>
+            </span>
+            <span class="query-tag">
+                <span class="tag-label">Category</span>
+                <span class="tag-value" id="query-category">—</span>
+            </span>
+            <span class="query-tag">
+                <span class="tag-label">Gender</span>
+                <span class="tag-value" id="query-gender">—</span>
+            </span>
+        </div>
+
+        <!-- ─── Summary Stats ─── -->
+        <section class="summary-section" id="summary-section">
+            <div class="summary-grid">
+                <div class="stat-card stat-total">
+                    <div class="stat-number" id="stat-total">0</div>
+                    <div class="stat-label">Total Programs</div>
+                </div>
+                <div class="stat-card stat-safe">
+                    <div class="stat-number" id="stat-safe">0</div>
+                    <div class="stat-label">Safe Bets</div>
+                </div>
+                <div class="stat-card stat-moderate">
+                    <div class="stat-number" id="stat-moderate">0</div>
+                    <div class="stat-label">Realistic</div>
+                </div>
+                <div class="stat-card stat-ambitious">
+                    <div class="stat-number" id="stat-ambitious">0</div>
+                    <div class="stat-label">Ambitious</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── Filters Bar ─── -->
+        <section class="results-section" id="results-section">
+            <div class="filters-bar" id="filters-bar">
+                <button class="filter-chip active" data-filter="all">All</button>
+                <button class="filter-chip chip-safe" data-filter="1">🟢 Safe</button>
+                <button class="filter-chip chip-moderate" data-filter="2">🟡 Realistic</button>
+                <button class="filter-chip chip-ambitious" data-filter="3">🔴 Ambitious</button>
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="search-input" 
+                    placeholder="🔎 Search IIT or program..."
+                >
+            </div>
+
+            <!-- ─── Results Table ─── -->
+            <div class="results-table-wrapper">
+                <table class="results-table" id="results-table">
+                    <thead>
+                        <tr>
+                            <th data-sort="index"># <span class="sort-icon">↕</span></th>
+                            <th data-sort="institute">IIT & Program <span class="sort-icon">↕</span></th>
+                            <th data-sort="tier">Risk Tier <span class="sort-icon">↕</span></th>
+                            <th data-sort="avg_closing">Avg. Closing Rank <span class="sort-icon">↕</span></th>
+                            <th data-sort="range">Rank Range (Min–Max) <span class="sort-icon">↕</span></th>
+                            <th data-sort="round">Earliest Round <span class="sort-icon">↕</span></th>
+                            <th data-sort="years">Years <span class="sort-icon">↕</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-body">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ─── No Results ─── -->
+        <div class="no-results" id="no-results">
+            <div class="no-results-icon">🎓</div>
+            <h3>No matching IIT programs found</h3>
+            <p>Try a higher rank number or changing your category/gender filters.</p>
+        </div>
+
+        <!-- ─── Footer ─── -->
+        <footer class="footer">
+            <p>Built with historical JoSAA IIT data (2016–2020) · JEE Advanced ranks only · For guidance purposes only</p>
+        </footer>
+    </div>
+
+    <!-- Error Toast -->
+    <div class="error-toast" id="error-toast"></div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
